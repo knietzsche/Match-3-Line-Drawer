@@ -6,7 +6,6 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     private HashSet<CellController> _cellSet = new HashSet<CellController>();
-
     private List<CellController> _selectedList = new List<CellController>();
 
     private bool _mouseDown;
@@ -14,6 +13,7 @@ public class InputManager : MonoBehaviour
 
     private void OnEnable()
     {
+        GameAction.SetGame += OnSetGame;
         GameAction.Add += OnAdd;
         GameAction.Pop += OnPop;
         GameAction.TurnStart += OnTurnStart;
@@ -22,10 +22,19 @@ public class InputManager : MonoBehaviour
 
     private void OnDisable()
     {
+        GameAction.SetGame -= OnSetGame;
         GameAction.Add -= OnAdd;
         GameAction.Pop -= OnPop;
         GameAction.TurnStart -= OnTurnStart;
         GameAction.TurnEnd -= OnTurnEnd;
+    }
+
+    private void OnSetGame(bool value)
+    {
+        if (!value)
+        {
+            _cellSet.Clear();
+        }
     }
 
     private void OnAdd(CellController cell)
@@ -92,7 +101,6 @@ public class InputManager : MonoBehaviour
                 if (cell.IsOverlapping(Input.mousePosition))
                 {
                     _selectedList.Add(cell);
-                    Debug.Log("Cell added count == " + _selectedList.Count );
                     break;
                 }
             }

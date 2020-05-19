@@ -45,14 +45,12 @@ public class CellController : MonoBehaviour
     {
         if (!_spawned)
         {
-            Debug.Log("Spawning");
             transform.localPosition = localPosition;
 
             _zoom = StartCoroutine(ZoomIn());
         }
         else if (localPosition != transform.localPosition)
         {
-            Debug.Log("Sliding");
             StartCoroutine(SlideTo(localPosition));
         }
     }
@@ -136,13 +134,6 @@ public class CellController : MonoBehaviour
         }
 
         transform.localPosition = localPositionEnd;
-
-        Debug.Log("Over and done");
-    }
-
-    public int GetScore()
-    {
-        return 100;
     }
 
     public bool IsOverlapping(Vector2 point)
@@ -163,6 +154,8 @@ public class CellController : MonoBehaviour
             return;
         }
 
+        other.transform.SetAsFirstSibling();
+
         _arrowContainer.gameObject.SetActive(true);
 
         var angle = Vector3.SignedAngle(other.transform.position - this.transform.position, Vector3.up, Vector3.back);
@@ -172,7 +165,6 @@ public class CellController : MonoBehaviour
     private void OnValidate()
     {
         Debug.Assert(_arrowContainer != null);
-        //Debug.Assert(_commonList.Count == GameManager.TypeCount);
-        //Debug.Assert(_premiumList.Count == GameManager.TypeCount);
+        Debug.Assert(_icon != null);
     }
 }
