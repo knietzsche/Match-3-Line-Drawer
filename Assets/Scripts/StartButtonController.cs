@@ -15,21 +15,28 @@ public class StartButtonController : MonoBehaviour
 
     private void OnEnable()
     {
-        GameAction.SetGame += OnSetGame;
+        GameAction.SetGameState += OnSetGameState;
     }
 
     private void OnDisable()
     {
-        GameAction.SetGame -= OnSetGame;
+        GameAction.SetGameState -= OnSetGameState;
     }
 
-    private void OnSetGame(bool value)
+    private void OnSetGameState(GameAction.GameState gameState)
     {
-        _button.interactable = !value;
+        if (gameState == GameAction.GameState.GameStart)
+        {
+            _button.interactable = false;
+        }
+        else if (gameState == GameAction.GameState.GameEnd)
+        {
+            _button.interactable = true;
+        }
     }
 
     private void Listener()
     {
-        GameAction.SetGame?.Invoke(true);
+        GameAction.SetGameState?.Invoke(GameAction.GameState.GameStart);
     }
 }

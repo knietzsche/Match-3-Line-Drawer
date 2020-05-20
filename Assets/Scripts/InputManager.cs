@@ -13,48 +13,42 @@ public class InputManager : MonoBehaviour
 
     private void OnEnable()
     {
-        GameAction.SetGame += OnSetGame;
-        GameAction.Add += OnAdd;
-        GameAction.Pop += OnPop;
-        GameAction.TurnStart += OnTurnStart;
-        GameAction.TurnEnd += OnTurnEnd;
+        GameAction.SetGameState += OnSetGameState;
+        GameAction.LoadCell += OnLoadCell;
     }
 
     private void OnDisable()
     {
-        GameAction.SetGame -= OnSetGame;
-        GameAction.Add -= OnAdd;
-        GameAction.Pop -= OnPop;
-        GameAction.TurnStart -= OnTurnStart;
-        GameAction.TurnEnd -= OnTurnEnd;
+        GameAction.SetGameState -= OnSetGameState;
+        GameAction.LoadCell -= OnLoadCell;
     }
 
-    private void OnSetGame(bool value)
+    private void OnSetGameState(GameAction.GameState gameState)
     {
-        if (!value)
+        if (gameState == GameAction.GameState.TurnStart)
+        {
+            _lockInput = false;
+        }
+        else if (gameState == GameAction.GameState.TurnEnd)
+        {
+            _lockInput = true;
+        }
+        else if (gameState == GameAction.GameState.GameEnd)
         {
             _cellSet.Clear();
         }
     }
 
-    private void OnAdd(CellController cell)
+    private void OnLoadCell(CellController cell, bool value)
     {
-        _cellSet.Add(cell);
-    }
-
-    private void OnPop(CellController cell)
-    {
-        _cellSet.Remove(cell);
-    }
-
-    private void OnTurnStart()
-    {
-        _lockInput = false;
-    }
-
-    private void OnTurnEnd()
-    {
-        _lockInput = true;
+        if (value)
+        {
+            _cellSet.Add(cell);
+        }
+        else
+        {
+            _cellSet.Remove(cell);
+        }
     }
 
     private void Update()
@@ -69,6 +63,11 @@ public class InputManager : MonoBehaviour
             {
                 Application.Quit();
             }
+        }
+
+        if (_lockInput)
+        {
+            return;
         }
 
         if (_mouseDown && _selectedList.Count > 0)
@@ -126,10 +125,10 @@ public class InputManager : MonoBehaviour
             {
                 foreach (var cell in _selectedList)
                 {
-                    GameAction.Pop?.Invoke(cell);
+                    GameAction.LoadCell?.Invoke(cell, false);
                 }
 
-                GameAction.TurnEnd?.Invoke();
+                GameAction.SetGameState?.Invoke(GameAction.GameState.TurnEnd);
             }
 
             _selectedList.Clear();

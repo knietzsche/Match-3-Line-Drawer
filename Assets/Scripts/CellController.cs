@@ -38,7 +38,7 @@ public class CellController : MonoBehaviour
         Type = type;
         Bonus = bonus;
 
-        GameAction.Add?.Invoke(this);
+        GameAction.LoadCell?.Invoke(this, true);
     }
 
     public void PlaceAt(Vector3 localPosition)

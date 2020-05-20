@@ -2,14 +2,10 @@
 
 public static class GameAction
 {
-    public static Action<bool> SetGame;
+    public enum GameState { GameStart, TurnStart, UpdateData, TurnEnd, GameEnd }
+    public static Action<GameState> SetGameState;
 
-    public static Action<CellController> Add;
-    public static Action<CellController> Pop;
-
-    public static Action TurnStart;
-    public static Action TurnEnd;
-    public static Action Upkeep;
+    public static Action<CellController, bool> LoadCell;
 
     public static Action<string, int> UpdateData;
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,8 +8,8 @@ public class GameManager : MonoBehaviour
     public const int CellCountY = 6;
     public const float CellSizeX = 162f;
     public const float CellSizeY = 186f;
+    
     public const int CellTypeCount = 4;
-
     public const float durationAnimation = .8f;
 
     public const string dataKeyScore = "score";
@@ -33,22 +32,14 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        GameAction.SetGame += OnSetGame;
-        GameAction.Add += OnAdd;
-        GameAction.Pop += OnPop;
-        GameAction.TurnStart += OnTurnStart;
-        GameAction.TurnEnd += OnTurnEnd;
-        GameAction.Upkeep += OnUpkeep;
+        GameAction.SetGameState += OnSetGameState;
+        GameAction.LoadCell += OnLoadCell;
     }
 
     private void OnDisable()
     {
-        GameAction.SetGame -= OnSetGame;
-        GameAction.Add -= OnAdd;
-        GameAction.Pop -= OnPop;
-        GameAction.TurnStart -= OnTurnStart;
-        GameAction.TurnEnd -= OnTurnEnd;
-        GameAction.Upkeep -= OnUpkeep;
+        GameAction.SetGameState -= OnSetGameState;
+        GameAction.LoadCell -= OnLoadCell;
     }
 
     void Awake()
@@ -63,16 +54,74 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void OnSetGame(bool value)
+    private void OnSetGameState(GameAction.GameState gameState)
     {
-        if (value)
+        if (gameState == GameAction.GameState.GameStart)
         {
             _scoreTotal = 0;
             _turnRemaining = turnMax;
 
-            GameAction.Upkeep?.Invoke();
+            GameAction.SetGameState?.Invoke(GameAction.GameState.UpdateData);
         }
-        else
+        else if (gameState == GameAction.GameState.TurnStart)
+        {
+            foreach (var column in _columns)
+            {
+                for (var indexY = 0; indexY < column.Count; indexY++)
+                {
+                    column[indexY].PlaceAt(GetLocalPosition(column[indexY], indexY));
+                }
+            }
+        }
+        else if (gameState == GameAction.GameState.UpdateData)
+        {
+            GameAction.UpdateData(dataKeyScore, _scoreTotal);
+            GameAction.UpdateData(dataKeyTurn, _turnRemaining);
+
+            Populate();
+
+            if (_turnRemaining > 0)
+            {
+                GameAction.SetGameState?.Invoke(GameAction.GameState.TurnStart);
+            }
+            else
+            {
+                GameAction.SetGameState?.Invoke(GameAction.GameState.GameEnd);
+            }
+        }
+        else if (gameState == GameAction.GameState.TurnEnd)
+        {
+            var scoreTurn = 0;
+
+            foreach (var cell in _toPopList)
+            {
+                _columns[cell.X].Remove(cell);
+
+                scoreTurn += scoreCell;
+                if (cell.Bonus)
+                {
+                    scoreTurn *= scoreBonusMultiplier;
+                }
+
+                cell.Pop();
+            }
+
+            foreach (var column in _columns)
+            {
+                for (var indexY = 0; indexY < column.Count; indexY++)
+                {
+                    column[indexY].PlaceAt(GetLocalPosition(column[indexY], indexY));
+                }
+            }
+
+            _toPopList.Clear();
+
+            _scoreTotal += scoreTurn;
+            _turnRemaining -= 1;
+
+            StartCoroutine(SetGameStateWait(GameAction.GameState.UpdateData));
+        }
+        else if (gameState == GameAction.GameState.GameEnd)
         {
             foreach (var column in _columns)
             {
@@ -84,79 +133,21 @@ public class GameManager : MonoBehaviour
                 column.Clear();
             }
         }
+
     }
 
-    private void OnAdd(CellController cell)
+    private void OnLoadCell(CellController cell, bool value)
     {
-        _columns[cell.X].Add(cell);
-    }
-
-    private void OnPop(CellController cell)
-    {
-        _toPopList.Add(cell);
-    }
-
-    private void OnTurnStart()
-    {
-        foreach (var column in _columns)
+        if (value)
         {
-            for (var indexY = 0; indexY < column.Count; indexY++)
-            {
-                column[indexY].PlaceAt(GetLocalPosition(column[indexY], indexY));
-            }
-        }
-    }
-
-    private void OnUpkeep()
-    {
-        Populate();
-
-        GameAction.UpdateData(dataKeyScore, _scoreTotal);
-        GameAction.UpdateData(dataKeyTurn, _turnRemaining);
-
-        if (_turnRemaining > 0)
-        {
-            GameAction.TurnStart?.Invoke();
+            _columns[cell.X].Add(cell);
         }
         else
         {
-            GameAction.SetGame?.Invoke(false);
+            _toPopList.Add(cell);
         }
     }
-
-    private void OnTurnEnd()
-    {
-        var scoreTurn = 0;
-
-        foreach (var cell in _toPopList)
-        {
-            _columns[cell.X].Remove(cell);
-
-            scoreTurn += scoreCell;
-            if (cell.Bonus)
-            {
-                scoreTurn *=  scoreBonusMultiplier;
-            }
-
-            cell.Pop();
-        }
-
-        foreach (var column in _columns)
-        {
-            for (var indexY = 0; indexY < column.Count; indexY++)
-            {
-                column[indexY].PlaceAt(GetLocalPosition(column[indexY], indexY));
-            }
-        }
-
-        _toPopList.Clear();
-
-        _scoreTotal += scoreTurn;
-        _turnRemaining -= 1;
-
-        StartCoroutine(InvokeWait(GameAction.Upkeep));
-    }
-
+   
     private void Populate()
     {
         for (var iX = 0; iX < CellCountX; iX++)
@@ -190,11 +181,11 @@ public class GameManager : MonoBehaviour
         return localPosition;
     }
 
-    private static IEnumerator InvokeWait(Action action)
+    private static IEnumerator SetGameStateWait(GameAction.GameState gameState)
     {
         yield return new WaitForSeconds(GameManager.durationAnimation);
 
-        action?.Invoke();
+        GameAction.SetGameState?.Invoke(gameState);
     }
 
     private void OnValidate()
