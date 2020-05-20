@@ -59,9 +59,16 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
-        if (_lockInput)
+        if (Input.GetKeyUp(KeyCode.Escape))
         {
-            return;
+            if (Application.isMobilePlatform)
+            {
+                Application.Unload();
+            }
+            else
+            {
+                Application.Quit();
+            }
         }
 
         if (_mouseDown && _selectedList.Count > 0)
