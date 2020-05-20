@@ -133,7 +133,6 @@ public class GameManager : MonoBehaviour
                 column.Clear();
             }
         }
-
     }
 
     private void OnLoadCell(CellController cell, bool value)
@@ -163,8 +162,8 @@ public class GameManager : MonoBehaviour
                 
                 var controller = instance.GetComponent<CellController>();
 
-                var type = UnityEngine.Random.Range(0, GameManager.CellTypeCount);
-                var bonus = UnityEngine.Random.Range(0, 4) == 0;
+                var type = Random.Range(0, GameManager.CellTypeCount);
+                var bonus = Random.Range(0, 4) == 0;
 
                 controller.Initialize(iX, type, bonus);
             }
