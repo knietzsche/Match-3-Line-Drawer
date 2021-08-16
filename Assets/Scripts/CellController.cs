@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+using static GameSettings;
+
 [RequireComponent(typeof(CircleCollider2D))]
 
 public class CellController : MonoBehaviour
@@ -30,7 +32,7 @@ public class CellController : MonoBehaviour
     public void Initialize(int x, int type, bool bonus)
     {
         _arrowContainer.gameObject.SetActive(false);
-        
+
         _icon.gameObject.SetActive(false);
         _icon.sprite = bonus ? _premiumList[type] : _commonList[type];
 
@@ -76,7 +78,7 @@ public class CellController : MonoBehaviour
         while (progress < 1f)
         {
             var duration = DateTime.Now - start;
-            progress = (float)duration.TotalSeconds / GameManager.durationAnimation;
+            progress = (float)duration.TotalSeconds / durationAnimation;
             var value = Mathf.SmoothStep(0f, 1f, progress);
 
             _icon.transform.localScale = new Vector3(value, value, value);
@@ -92,7 +94,7 @@ public class CellController : MonoBehaviour
 
     private IEnumerator ZoomOut()
     {
-        _icon.transform.localScale = Vector3.one ;
+        _icon.transform.localScale = Vector3.one;
         _icon.gameObject.SetActive(true);
 
         var start = DateTime.Now;
@@ -101,7 +103,7 @@ public class CellController : MonoBehaviour
         while (progress < 1f)
         {
             var duration = DateTime.Now - start;
-            progress = (float) duration.TotalSeconds / (GameManager.durationAnimation * .5f);
+            progress = (float)duration.TotalSeconds / (durationAnimation * .5f);
             var value = Mathf.SmoothStep(1f, 0f, progress);
 
             _icon.transform.localScale = new Vector3(value, value, value);
@@ -125,7 +127,7 @@ public class CellController : MonoBehaviour
         while (progress < 1f)
         {
             var duration = DateTime.Now - start;
-            progress = (float)duration.TotalSeconds / (GameManager.durationAnimation * .5f);
+            progress = (float)duration.TotalSeconds / (durationAnimation * .5f);
             var value = Mathf.SmoothStep(0f, 1f, progress);
 
             transform.localPosition = localPositionStart + (localPositionDifference * value);
@@ -159,7 +161,7 @@ public class CellController : MonoBehaviour
         _arrowContainer.gameObject.SetActive(true);
 
         var angle = Vector3.SignedAngle(other.transform.position - this.transform.position, Vector3.up, Vector3.back);
-        _arrowContainer.rotation = Quaternion.Euler(0f,0f,angle);
+        _arrowContainer.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     private void OnValidate()

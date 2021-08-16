@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
+using static GameSettings;
+
 [RequireComponent(typeof(Text))]
 public class GameOverController : MonoBehaviour
 {
@@ -51,7 +53,7 @@ public class GameOverController : MonoBehaviour
         while (progress < 1f)
         {
             var duration = DateTime.Now - start;
-            progress = (float)duration.TotalSeconds / (GameManager.durationAnimation * 3f);
+            progress = (float)duration.TotalSeconds / (durationAnimation * 3f);
             var value = Mathf.SmoothStep(0f, 1f, progress);
 
             _text.color = new Color(_original.r, _original.g, _original.b, _original.a * value);

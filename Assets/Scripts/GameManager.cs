@@ -2,23 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using static GameSettings;
+
 public class GameManager : MonoBehaviour
 {
-    public const int CellCountX = 7;
-    public const int CellCountY = 6;
-    public const float CellSizeX = 162f;
-    public const float CellSizeY = 186f;
-    
-    public const int CellTypeCount = 4;
-    public const float durationAnimation = .8f;
-
-    public const string dataKeyScore = "score";
-    public const string dataKeyTurn = "round";
-
-    public const int turnMax = 20;
-    public const int scoreCell = 100;
-    public const int scoreBonusMultiplier = 2;
-
     private Vector2 _originOffset;
 
     [SerializeField] private Transform _gameBoard;
@@ -162,7 +149,14 @@ public class GameManager : MonoBehaviour
                 
                 var controller = instance.GetComponent<CellController>();
 
-                var type = Random.Range(0, GameManager.CellTypeCount);
+                // I want to have controll from the game manager over the cell type? what for?
+                // also setting up the X here ??
+                // what if none of this had to be set up?
+
+                // what if some kind of dealer set up these things??
+                // why would then be the reason to sepparate setting of these properties and their initialization
+
+                var type = Random.Range(0, CellTypeCount);
                 var bonus = Random.Range(0, 4) == 0;
 
                 controller.Initialize(iX, type, bonus);
@@ -182,14 +176,14 @@ public class GameManager : MonoBehaviour
 
     private static IEnumerator SetGameStateWait(GameAction.GameState gameState)
     {
-        yield return new WaitForSeconds(GameManager.durationAnimation);
+        yield return new WaitForSeconds(durationAnimation);
 
         GameAction.SetGameState?.Invoke(gameState);
     }
 
     private void OnValidate()
     {
-        Debug.Assert(_gameBoard != null);
-        Debug.Assert(_cellPrefab != null);
+        Debug.Assert(_gameBoard != null, $"{this} is missing reference");
+        Debug.Assert(_cellPrefab != null, $"{this} is missing reference");
     }
 }
